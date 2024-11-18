@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
+import { useNavigate } from 'react-router-dom';
 import type { LoginCredentials } from '@/types/auth';
 
 const loginSchema = z.object({
@@ -12,18 +13,38 @@ const loginSchema = z.object({
 });
 
 export default function LoginForm() {
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = 
+  const navigate = useNavigate();
+  const { register, handleSubmit, formState: { errors, isSubmitting }, setError } = 
     useForm<LoginCredentials>({
       resolver: zodResolver(loginSchema)
     });
 
   const onSubmit = async (data: LoginCredentials) => {
     try {
-      // Mock API call - replace with real API
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      console.log('Login:', data);
+      const response = await fetch('http://localhost:3000/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        // שמירת הטוקן ב-localStorage
+        localStorage.setItem('token', result.token);
+        // ניווט לדף הראשי
+        navigate('/');
+      } else {
+        setError('root', { 
+          message: result.message || 'Login failed' 
+        });
+      }
     } catch (error) {
-      console.error('Login failed:', error);
+      setError('root', { 
+        message: 'Connection error' 
+      });
     }
   };
 
@@ -32,7 +53,7 @@ export default function LoginForm() {
       <div>
         <Input
           type="email"
-          placeholder="Email"
+          placeholder="אימייל"
           {...register('email')}
           className={errors.email ? 'border-red-500' : ''}
         />
@@ -44,7 +65,7 @@ export default function LoginForm() {
       <div>
         <Input
           type="password"
-          placeholder="Password"
+          placeholder="סיסמה"
           {...register('password')}
           className={errors.password ? 'border-red-500' : ''}
         />
@@ -53,12 +74,16 @@ export default function LoginForm() {
         )}
       </div>
 
+      {errors.root && (
+        <p className="text-red-500 text-sm">{errors.root.message}</p>
+      )}
+
       <Button 
         type="submit" 
         className="w-full"
         disabled={isSubmitting}
       >
-        {isSubmitting ? 'Logging in...' : 'Login'}
+        {isSubmitting ? 'מתחבר...' : 'התחברות'}
       </Button>
     </form>
   );

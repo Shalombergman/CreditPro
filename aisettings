@@ -1,0 +1,52 @@
+// System Configuration
+export const AI_CONFIG = {
+  // API Endpoints
+  API_BASE_URL: process.env.API_BASE_URL || 'http://localhost:3000',
+  
+  // Authentication
+  AUTH_TOKEN_KEY: 'credit_rate_auth_token',
+  REFRESH_TOKEN_KEY: 'credit_rate_refresh_token',
+  
+  // Feature Flags
+  FEATURES: {
+    CREDIT_SCORING: true,
+    DECISION_TREE: true,
+    REAL_TIME_ANALYTICS: true,
+    TWO_FACTOR_AUTH: true
+  },
+  
+  // Analytics Configuration
+  ANALYTICS: {
+    BATCH_SIZE: 100,
+    UPDATE_INTERVAL: 60000, // 1 minute
+    RETENTION_PERIOD: 30 // days
+  },
+  
+  // Credit Score Thresholds
+  CREDIT_SCORE: {
+    EXCELLENT: 800,
+    GOOD: 700,
+    FAIR: 600,
+    POOR: 500
+  }
+};
+
+// Decision Tree Configuration
+export const DECISION_TREE_CONFIG = {
+  MAX_DEPTH: 5,
+  MIN_SAMPLES_SPLIT: 2,
+  FEATURES: [
+    'income',
+    'employment_status',
+    'credit_history',
+    'debt_ratio',
+    'payment_history'
+  ]
+};
+
+// Real-time Analytics Settings
+export const ANALYTICS_CONFIG = {
+  KAFKA_TOPIC: 'credit_analytics',
+  BATCH_WINDOW: 5000, // 5 seconds
+  AGGREGATION_WINDOW: 300000 // 5 minutes
+}; 

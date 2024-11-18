@@ -1,39 +1,28 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { useState } from 'react';
 import LoginForm from '@/components/auth/LoginForm';
 import RegisterForm from '@/components/auth/RegisterForm';
+import { Card } from '@/components/ui/card';
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-center">
-            {isLogin ? 'התחברות למערכת' : 'הרשמה למערכת'}
-          </CardTitle>
-          <div className="flex gap-2 mt-4">
-            <Button
-              variant={isLogin ? 'default' : 'outline'}
-              className="flex-1"
-              onClick={() => setIsLogin(true)}
-            >
-              התחברות
-            </Button>
-            <Button
-              variant={!isLogin ? 'default' : 'outline'}
-              className="flex-1"
-              onClick={() => setIsLogin(false)}
-            >
-              הרשמה
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {isLogin ? <LoginForm /> : <RegisterForm />}
-        </CardContent>
+    <div className="container flex items-center justify-center min-h-screen py-8">
+      <Card className="w-full max-w-md p-6">
+        <div className="mb-6 text-center">
+          <h1 className="text-2xl font-bold">{isLogin ? 'התחברות' : 'הרשמה'}</h1>
+        </div>
+        
+        {isLogin ? <LoginForm /> : <RegisterForm />}
+        
+        <div className="mt-4 text-center">
+          <button
+            onClick={() => setIsLogin(!isLogin)}
+            className="text-sm text-blue-500 hover:underline"
+          >
+            {isLogin ? 'עדיין אין לך חשבון? הירשם כאן' : 'כבר יש לך חשבון? התחבר כאן'}
+          </button>
+        </div>
       </Card>
     </div>
   );

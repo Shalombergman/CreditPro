@@ -1,16 +1,42 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { Bell, ChevronDown, Menu, X } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Bell, ChevronDown, Menu } from 'lucide-react';
 import { ROUTES } from '@/routes';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
 
 interface NavbarProps {
   onMenuClick: () => void;
 }
 
 export default function Navbar({ onMenuClick }: NavbarProps) {
+  const navigate = useNavigate();
+  const { logout } = useAuth();
   const [showNotifications, setShowNotifications] = React.useState(false);
   const [showProfile, setShowProfile] = React.useState(false);
+  const [showLogoutDialog, setShowLogoutDialog] = React.useState(false);
+
+  const handleLogout = () => {
+    setShowProfile(false);
+    setShowLogoutDialog(true);
+  };
+
+  const confirmLogout = () => {
+    logout();
+    setShowLogoutDialog(false);
+    alert('יצאת בהצלחה מהאתר');
+    navigate('/auth');
+  };
 
   return (
     <nav className="bg-white shadow-lg">
@@ -80,7 +106,7 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
                   </Link>
                   <button
                     className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    onClick={() => {/* Implement logout */}}
+                    onClick={handleLogout}
                   >
                     Logout
                   </button>
@@ -90,6 +116,23 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
           </div>
         </div>
       </div>
+
+      <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>האם אתה בטוח שברצונך להתנתק?</AlertDialogTitle>
+            <AlertDialogDescription>
+              פעולה זו תנתק אותך מהמערכת ותחזיר אותך למסך ההתחברות.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>ביטול</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmLogout}>
+              אישור יציאה
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </nav>
   );
 }

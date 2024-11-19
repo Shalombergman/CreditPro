@@ -1,0 +1,81 @@
+Project Tree for: /Users/shalom_bergman/kodcode2/Data_engineering_course/client_project/CreditPro
+
+├── .bolt/
+│   ├── config.json
+│   ├── prompt
+├── .config/
+├── .npmrc
+├── aisettings
+├── config/
+│   ├── .env
+│   ├── eslint.config.js
+│   ├── postcss.config.js
+│   ├── tailwind.config.js
+│   ├── tsconfig.app.json
+│   ├── tsconfig.json
+│   ├── tsconfig.node.json
+│   ├── vite.config.ts
+├── index.html
+├── package-lock.json
+├── package.json
+├── project_structure.txt
+├── scripts/
+│   ├── clean_project.sh
+│   ├── organize_project.sh
+│   ├── python/
+│   │   ├── print_new_tree.py
+│   │   ├── tree.py
+│   ├── tree.py
+├── server.ts
+├── src/
+│   ├── App.tsx
+│   ├── components/
+│   │   ├── auth/
+│   │   │   ├── LoginForm.tsx
+│   │   │   ├── RegisterForm.tsx
+│   │   ├── dashboard/
+│   │   │   ├── ApplicationsTable.tsx
+│   │   │   ├── CreditScore.tsx
+│   │   │   ├── CreditScoreCard.tsx
+│   │   │   ├── QuickActionCard.tsx
+│   │   │   ├── QuickActions.tsx
+│   │   │   ├── RecentActivity.tsx
+│   │   ├── layout/
+│   │   │   ├── Layout.tsx
+│   │   │   ├── Navbar.tsx
+│   │   │   ├── Sidebar.tsx
+│   │   ├── ui/
+│   │   │   ├── alert-dialog.tsx
+│   │   │   ├── badge.tsx
+│   │   │   ├── button.tsx
+│   │   │   ├── card.tsx
+│   │   │   ├── input.tsx
+│   ├── config/
+│   │   ├── constants.ts
+│   ├── contexts/
+│   │   ├── AuthContext.tsx
+│   ├── hooks/
+│   │   ├── useAnalytics.ts
+│   ├── index.css
+│   ├── lib/
+│   │   ├── utils.ts
+│   ├── main.tsx
+│   ├── pages/
+│   │   ├── analytics/
+│   │   │   ├── AnalyticsPage.tsx
+│   │   ├── applications/
+│   │   │   ├── ApplicationsPage.tsx
+│   │   │   ├── NewApplicationPage.tsx
+│   │   ├── auth/
+│   │   │   ├── AuthPage.tsx
+│   │   ├── credit-score/
+│   │   │   ├── CreditScorePage.tsx
+│   │   ├── dashboard/
+│   │   │   ├── DashboardPage.tsx
+│   │   ├── profile/
+│   │   │   ├── ProfilePage.tsx
+│   ├── routes.ts
+│   ├── types/
+│   │   ├── auth.ts
+│   │   ├── credit.ts
+│   ├── vite-env.d.ts

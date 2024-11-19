@@ -1,4 +1,5 @@
 export const ROUTES = {
+  AUTH: '/auth',
   DASHBOARD: '/',
   CREDIT_SCORE: '/credit-score',
   APPLICATIONS: '/applications',

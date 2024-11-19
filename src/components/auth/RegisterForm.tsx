@@ -23,6 +23,10 @@ export default function RegisterForm() {
       alert('הסיסמאות אינן תואמות');
       return;
     }
+    if (formData.password.length < 8) {
+      alert('הסיסמה חייבת להכיל לפחות 8 תווים');
+      return;
+    }
     // כאן תוסיף את הלוגיקה להרשמה
     console.log('Register attempt:', formData);
   };
@@ -56,6 +60,7 @@ export default function RegisterForm() {
           value={formData.password}
           onChange={(e) => setFormData({ ...formData, password: e.target.value })}
           required
+          minLength={8}
         />
       </div>
 

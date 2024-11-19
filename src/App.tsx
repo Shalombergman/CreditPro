@@ -1,29 +1,36 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import Layout from '@/components/layout/Layout';
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import DashboardPage from '@/pages/dashboard/DashboardPage';
 import CreditScorePage from '@/pages/credit-score/CreditScorePage';
 import ApplicationsPage from '@/pages/applications/ApplicationsPage';
 import NewApplicationPage from '@/pages/applications/NewApplicationPage';
 import AuthPage from '@/pages/auth/AuthPage';
+import ProfilePage from '@/pages/profile/ProfilePage';
+import { ROUTES } from '@/routes';
 
 function AppRoutes() {
   const { isAuthenticated } = useAuth();
 
   return (
     <Routes>
-      <Route path="/auth" element={
-        !isAuthenticated ? <AuthPage /> : <Navigate to="/" replace />
+      <Route path={ROUTES.AUTH} element={
+        isAuthenticated ? <Navigate to={ROUTES.HOME} replace /> : <AuthPage />
       } />
-      
-      <Route element={<Layout />}>
-        <Route path="/" element={
-          isAuthenticated ? <DashboardPage /> : <Navigate to="/auth" replace />
-        } />
-        <Route path="/credit-score" element={<CreditScorePage />} />
-        <Route path="/applications" element={<ApplicationsPage />} />
-        <Route path="/applications/new" element={<NewApplicationPage />} />
+
+      <Route element={<ProtectedRoute />}>
+        <Route element={<Layout />}>
+          <Route path={ROUTES.HOME} element={<DashboardPage />} />
+          <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
+          <Route path={ROUTES.CREDIT_SCORE} element={<CreditScorePage />} />
+          <Route path={ROUTES.APPLICATIONS} element={<ApplicationsPage />} />
+          <Route path={ROUTES.NEW_APPLICATION} element={<NewApplicationPage />} />
+        </Route>
       </Route>
+      
+      {/* Catch all route */}
+      <Route path="*" element={<Navigate to={ROUTES.HOME} replace />} />
     </Routes>
   );
 }
@@ -31,9 +38,9 @@ function AppRoutes() {
 export default function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
+      <Router>
         <AppRoutes />
-      </BrowserRouter>
+      </Router>
     </AuthProvider>
   );
 }

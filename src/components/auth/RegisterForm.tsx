@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { auth, db } from '@/lib/firebase';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
+import { useNavigate } from 'react-router-dom';
 
 interface RegisterFormData {
   fullName: string;
@@ -16,23 +20,66 @@ export default function RegisterForm() {
     password: '',
     confirmPassword: ''
   });
+  const [error, setError] = useState<string>('');
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+    setLoading(true);
+
     if (formData.password !== formData.confirmPassword) {
-      alert('הסיסמאות אינן תואמות');
+      setError('הסיסמאות אינן תואמות');
+      setLoading(false);
       return;
     }
-    if (formData.password.length < 8) {
-      alert('הסיסמה חייבת להכיל לפחות 8 תווים');
+
+    if (formData.password.length < 6) {
+      setError('הסיסמה חייבת להכיל לפחות 6 תווים');
+      setLoading(false);
       return;
     }
-    // כאן תוסיף את הלוגיקה להרשמה
-    console.log('Register attempt:', formData);
+
+    try {
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        formData.email,
+        formData.password
+      );
+
+      await setDoc(doc(db, 'users', userCredential.user.uid), {
+        fullName: formData.fullName,
+        email: formData.email,
+        createdAt: new Date().toISOString(),
+        role: 'user'
+      });
+
+      navigate('/profile');
+    } catch (err: any) {
+      switch (err.code) {
+        case 'auth/email-already-in-use':
+          setError('כתובת האימייל כבר קיימת במערכת');
+          break;
+        case 'auth/invalid-email':
+          setError('כתובת האימייל אינה תקינה');
+          break;
+        case 'auth/weak-password':
+          setError('הסיסמה חלשה מדי');
+          break;
+        default:
+          setError('אירעה שגיאה בתהליך ההרשמה. אנא נסה שוב.');
+          console.error('Registration error:', err);
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {error && <div className="text-red-500 text-sm">{error}</div>}
+      
       <div className="space-y-2">
         <Input
           type="text"
@@ -40,6 +87,7 @@ export default function RegisterForm() {
           value={formData.fullName}
           onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
           required
+          disabled={loading}
         />
       </div>
 
@@ -50,6 +98,7 @@ export default function RegisterForm() {
           value={formData.email}
           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
           required
+          disabled={loading}
         />
       </div>
       
@@ -61,6 +110,7 @@ export default function RegisterForm() {
           onChange={(e) => setFormData({ ...formData, password: e.target.value })}
           required
           minLength={8}
+          disabled={loading}
         />
       </div>
 
@@ -71,11 +121,12 @@ export default function RegisterForm() {
           value={formData.confirmPassword}
           onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
           required
+          disabled={loading}
         />
       </div>
 
-      <Button type="submit" className="w-full">
-        הרשם
+      <Button type="submit" className="w-full" disabled={loading}>
+        {loading ? 'מבצע רישום...' : 'הרשם'}
       </Button>
     </form>
   );

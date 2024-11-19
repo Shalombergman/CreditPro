@@ -1,7 +1,9 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { auth } from '@/lib/firebase';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { useNavigate } from 'react-router-dom';
 
 interface LoginFormData {
   email: string;
@@ -9,25 +11,44 @@ interface LoginFormData {
 }
 
 export default function LoginForm() {
-  const navigate = useNavigate();
   const [formData, setFormData] = useState<LoginFormData>({
     email: '',
     password: ''
   });
+  const [error, setError] = useState<string>('');
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+    setLoading(true);
+
     try {
-      console.log('Login attempt:', formData);
-      
-      navigate('/', { replace: true });
-    } catch (error) {
-      console.error('Login failed:', error);
+      await signInWithEmailAndPassword(auth, formData.email, formData.password);
+      navigate('/profile');
+    } catch (err: any) {
+      switch (err.code) {
+        case 'auth/user-not-found':
+        case 'auth/wrong-password':
+          setError('אימייל או סיסמה שגויים');
+          break;
+        case 'auth/too-many-requests':
+          setError('יותר מדי ניסיונות התחברות. נסה שוב מאוחר יותר');
+          break;
+        default:
+          setError('אירעה שגיאה בהתחברות. אנא נסה שוב');
+          console.error('Login error:', err);
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {error && <div className="text-red-500 text-sm">{error}</div>}
+      
       <div className="space-y-2">
         <Input
           type="email"
@@ -35,6 +56,7 @@ export default function LoginForm() {
           value={formData.email}
           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
           required
+          disabled={loading}
         />
       </div>
       
@@ -45,11 +67,12 @@ export default function LoginForm() {
           value={formData.password}
           onChange={(e) => setFormData({ ...formData, password: e.target.value })}
           required
+          disabled={loading}
         />
       </div>
 
-      <Button type="submit" className="w-full">
-        התחבר
+      <Button type="submit" className="w-full" disabled={loading}>
+        {loading ? 'מתחבר...' : 'התחבר'}
       </Button>
     </form>
   );

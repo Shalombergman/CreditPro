@@ -7,4 +7,5 @@ export const ROUTES = {
   CREDIT_SCORE: '/credit-score',
   APPLICATIONS: '/applications',
   NEW_APPLICATION: '/applications/new',
+  ANALYTICS: '/analytics',
 } as const; 

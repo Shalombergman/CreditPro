@@ -8,6 +8,7 @@ import ApplicationsPage from '@/pages/applications/ApplicationsPage';
 import NewApplicationPage from '@/pages/applications/NewApplicationPage';
 import AuthPage from '@/pages/auth/AuthPage';
 import ProfilePage from '@/pages/profile/ProfilePage';
+import AnalyticsPage from '@/pages/analytics/AnalyticsPage';
 import { ROUTES } from '@/routes';
 
 function AppRoutes() {
@@ -26,10 +27,10 @@ function AppRoutes() {
           <Route path={ROUTES.CREDIT_SCORE} element={<CreditScorePage />} />
           <Route path={ROUTES.APPLICATIONS} element={<ApplicationsPage />} />
           <Route path={ROUTES.NEW_APPLICATION} element={<NewApplicationPage />} />
+          <Route path={ROUTES.ANALYTICS} element={<AnalyticsPage />} />
         </Route>
       </Route>
       
-      {/* Catch all route */}
       <Route path="*" element={<Navigate to={ROUTES.HOME} replace />} />
     </Routes>
   );

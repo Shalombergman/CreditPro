@@ -1,108 +1,84 @@
-import Fastify from 'fastify';
-import cors from '@fastify/cors';
+import express from 'express';
+const app = express();
 
-const fastify = Fastify({ logger: true });
+// הגדרות בסיסיות
+app.use(express.json());
 
-// הגדרת CORS מעודכנת
-const start = async () => {
+// הגדרת CORS פשוטה
+app.use((_, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', '*');
+  res.header('Access-Control-Allow-Headers', '*');
+  next();
+});
+
+// מערך זמני לשמירת משתמשים
+const users: any[] = [];
+const pendingRegistrations = new Map<string, any>();
+
+// נתיב להרשמה
+app.post('/api/register', (req, res) => {
   try {
-    // רישום ה-CORS plugin
-    await fastify.register(cors, {
-      origin: true,
-      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization'],
-      credentials: true
-    });
-
-    // מערך זמני לשמירת משתמשים
-    const users: any[] = [];
-    const pendingRegistrations: Map<string, any> = new Map();
-
-    // נתיב להרשמה
-    fastify.post('/api/register', async (request, reply) => {
-      try {
-        const { username, email, password } = request.body as any;
-        fastify.log.info('Got registration request:', { username, email });
-        
-        if (!username || !email || !password) {
-          return reply.code(400).send({ message: 'חסרים שדות חובה' });
-        }
-
-        // שמירת פרטי המשתמש בזיכרון זמני
-        const tempUserId = Math.random().toString(36).substring(7);
-        pendingRegistrations.set(tempUserId, { username, email, password });
-
-        // שליחת תשובה חיובית
-        return reply
-          .code(200)
-          .header('Access-Control-Allow-Origin', 'http://localhost:3000')
-          .header('Access-Control-Allow-Credentials', 'true')
-          .send({
-            message: 'קוד אימות נשלח למייל',
-            tempUserId
-          });
-      } catch (error) {
-        fastify.log.error('Registration error:', error);
-        return reply.code(500).send({ message: 'שגיאה בתהליך ההרשמה' });
-      }
-    });
-
-    // נתיב לאימות OTP
-    fastify.post('/api/verify_register', async (request, reply) => {
-      try {
-        const { tempUserId, otp } = request.body as any;
-        
-        if (!tempUserId || !otp) {
-          return reply.code(400).send({ message: 'חסרים שדות חובה' });
-        }
-
-        const pendingUser = pendingRegistrations.get(tempUserId);
-        if (!pendingUser) {
-          return reply.code(400).send({ message: 'בקשת הרשמה לא תקינה' });
-        }
-
-        // בדיקת קוד האימות
-        if (otp !== '123456') {
-          return reply.code(400).send({ message: 'קוד אימות שגוי' });
-        }
-
-        // יצירת המשתמש
-        const newUser = {
-          id: users.length + 1,
-          ...pendingUser
-        };
-
-        users.push(newUser);
-        pendingRegistrations.delete(tempUserId);
-
-        return reply
-          .code(200)
-          .header('Access-Control-Allow-Origin', 'http://localhost:3000')
-          .header('Access-Control-Allow-Credentials', 'true')
-          .send({
-            token: 'dummy-token',
-            user: {
-              id: newUser.id,
-              username: newUser.username,
-              email: newUser.email
-            }
-          });
-      } catch (error) {
-        fastify.log.error('Verification error:', error);
-        return reply.code(500).send({ message: 'שגיאה בתהליך האימות' });
-      }
-    });
-
-    // הפעלת השרת
-    await fastify.listen({ port: 5001, host: '0.0.0.0' });
-    console.log('Server running on port 5001');
-  } catch (err) {
-    fastify.log.error(err);
-    process.exit(1);
+    const { username, email, password } = req.body;
+    console.log('Got registration request:', { email });
+    
+    // שמירת המייל בזיכרון זמני
+    const tempUserId = Math.random().toString(36).substring(7);
+    pendingRegistrations.set(tempUserId, { username, email, password });
+    
+    console.log('Created registration:', { tempUserId, email });
+    res.json({ tempUserId });
+  } catch (error) {
+    console.error('Registration error:', error);
+    res.status(500).json({ message: 'שגיאה בתהליך ההרשמה' });
   }
-};
+});
 
-start();
+// נתיב לאימות
+app.post('/api/verify_register', (req, res) => {
+  try {
+    const { email, otp, tempUserId } = req.body;
+    console.log('Received verification request:', { email, otp, tempUserId });
 
-export default fastify;
+    // בדיקה שיש tempUserId
+    if (!tempUserId) {
+      return res.status(400).json({ message: 'Missing tempUserId' });
+    }
+
+    // בדיקה שיש רישום ממתין
+    const pendingUser = pendingRegistrations.get(tempUserId);
+    if (!pendingUser) {
+      return res.status(400).json({ message: 'Invalid registration request' });
+    }
+
+    // בדיקה שהמייל תואם
+    if (pendingUser.email !== email) {
+      return res.status(400).json({ message: 'Email mismatch' });
+    }
+
+    // שליחת המייל והקוד לצוות 2
+    console.log('Sending to team 2:', {
+      email: email.trim(),
+      otp: otp.trim()
+    });
+
+    // החזרת תשובה חיובית
+    res.json({
+      token: 'dummy-token',
+      user: {
+        id: 1,
+        email: email.trim()
+      }
+    });
+  } catch (error) {
+    console.error('Verification error:', error);
+    res.status(500).json({ message: 'שגיאה בתהליך האימות' });
+  }
+});
+
+app.listen(5001, '0.0.0.0', () => {
+  console.log('Server running on port 5001');
+});
+export default app;
   
+

@@ -10,7 +10,7 @@ import { ROUTES } from '@/routes';
 import EditProfileModal from '@/components/profile/EditProfileModal';
 
 interface UserProfile {
-  fullName: string;
+  username: string;
   email: string;
   joinDate: string;
 }
@@ -35,7 +35,7 @@ export default function ProfilePage() {
         
         if (userDoc.exists() && userData) {
           setProfile({
-            fullName: userData.fullName,
+            username: userData.username,
             email: user.email || '',
             joinDate: new Date(user.metadata.creationTime || Date.now()).toLocaleDateString('he-IL')
           });
@@ -66,7 +66,7 @@ export default function ProfilePage() {
           const userData = userDoc.data();
           if (userDoc.exists() && userData) {
             setProfile({
-              fullName: userData.fullName,
+              username: userData.username,
               email: auth.currentUser?.email || '',
               joinDate: profile?.joinDate || ''
             });
@@ -92,7 +92,7 @@ export default function ProfilePage() {
         <div className="space-y-4">
           <div className="flex justify-between items-center">
             <div>
-              <h2 className="text-xl font-semibold">{profile.fullName}</h2>
+              <h2 className="text-xl font-semibold">{profile.username}</h2>
               <p className="text-gray-600">{profile.email}</p>
             </div>
             <div className="space-x-2 flex">

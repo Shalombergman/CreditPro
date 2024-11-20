@@ -10,13 +10,13 @@ interface EditProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
   currentProfile: {
-    fullName: string;
+    username: string;
   };
   onUpdate: () => void;
 }
 
 export default function EditProfileModal({ isOpen, onClose, currentProfile, onUpdate }: EditProfileModalProps) {
-  const [fullName, setFullName] = useState(currentProfile.fullName);
+  const [username, setUsername] = useState(currentProfile.username);
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
 
@@ -27,7 +27,7 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile, onUp
     setLoading(true);
     try {
       await updateDoc(doc(db, 'users', user.uid), {
-        fullName
+        username
       });
       onUpdate();
       onClose();
@@ -48,9 +48,9 @@ export default function EditProfileModal({ isOpen, onClose, currentProfile, onUp
           <div className="space-y-2">
             <Input
               type="text"
-              placeholder="שם מלא"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
+              placeholder="שם משתמש"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               required
               disabled={loading}
             />

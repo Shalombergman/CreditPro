@@ -1,8 +1,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { auth } from '@/lib/firebase';
-import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 
 interface LoginFormData {
@@ -25,20 +23,37 @@ export default function LoginForm() {
     setLoading(true);
 
     try {
-      await signInWithEmailAndPassword(auth, formData.email, formData.password);
-      navigate('/profile');
+      const response = await fetch('http://127.0.0.1:5001/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password
+        })
+      });
+
+      const data = await response.json();
+      console.log('Server response:', data);
+
+      if (!response.ok) {
+        throw new Error(data.message || 'שגיאה בתהליך ההתחברות');
+      }
+
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+        navigate('/profile');
+      } else {
+        throw new Error('לא התקבל טוקן מהשרת');
+      }
     } catch (err: any) {
-      switch (err.code) {
-        case 'auth/user-not-found':
-        case 'auth/wrong-password':
-          setError('אימייל או סיסמה שגויים');
-          break;
-        case 'auth/too-many-requests':
-          setError('יותר מדי ניסיונות התחברות. נסה שוב מאוחר יותר');
-          break;
-        default:
-          setError('אירעה שגיאה בהתחברות. אנא נסה שוב');
-          console.error('Login error:', err);
+      console.error('Login error:', err);
+      if (err.message === 'Failed to fetch') {
+        setError('לא ניתן להתחבר לשרת. אנא בדוק את החיבור לאינטרנט ונסה שוב.');
+      } else {
+        setError(err.message || 'אירעה שגיאה בתהליך ההתחברות. אנא נסה שוב.');
       }
     } finally {
       setLoading(false);

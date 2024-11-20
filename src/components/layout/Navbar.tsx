@@ -51,29 +51,29 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
             >
               <Menu className="h-6 w-6" />
             </Button>
-            <Link to={ROUTES.DASHBOARD} className="flex-shrink-0 flex items-center">
+            <Link to={ROUTES.HOME} className="flex-shrink-0 flex items-center">
               <span className="text-2xl font-bold text-blue-600">CreditPro</span>
             </Link>
           </div>
 
           <div className="hidden md:flex md:items-center md:space-x-4">
             <Link 
-              to={ROUTES.DASHBOARD} 
+              to={ROUTES.HOME} 
               className="px-3 py-2 rounded-md text-sm font-medium text-gray-900 hover:text-blue-600"
             >
-              Dashboard
+              דף הבית
             </Link>
             <Link 
               to={ROUTES.APPLICATIONS} 
               className="px-3 py-2 rounded-md text-sm font-medium text-gray-500 hover:text-blue-600"
             >
-              Applications
+              בקשות
             </Link>
             <Link 
               to={ROUTES.ANALYTICS} 
               className="px-3 py-2 rounded-md text-sm font-medium text-gray-500 hover:text-blue-600"
             >
-              Analytics
+              אנליטיקס
             </Link>
           </div>
 

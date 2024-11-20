@@ -7,11 +7,16 @@ export default function Layout() {
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <Navbar onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
-      <div className="flex">
+      <div className="flex flex-1 relative">
         <Sidebar isOpen={isSidebarOpen} />
-        <main className={`flex-1 p-6 transition-all duration-300 ${isSidebarOpen ? 'md:ml-64' : ''}`}>
+        <main className={`
+          flex-1 p-6 
+          transition-all duration-300 
+          ${isSidebarOpen ? 'md:mr-64' : ''} 
+          overflow-auto
+        `}>
           <Outlet />
         </main>
       </div>

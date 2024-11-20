@@ -1,35 +1,41 @@
 import { useState, useEffect } from 'react';
-import { ANALYTICS_CONFIG } from '@/config/constants';
-import type { CreditScore } from '@/types/credit';
+import { ANALYTICS_CONFIG, CREDIT_THRESHOLDS } from '@/config/constants';
+import { CreditScore, CreditScoreStatus } from '@/types/credit';
+import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { useAuth } from '@/contexts/AuthContext';
 
 export function useAnalytics() {
   const [data, setData] = useState<CreditScore[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchData = async () => {
+      if (!user) return;
+
       try {
-        // Mock data for now - would be replaced with real API call
-        const mockData: CreditScore[] = Array.from({ length: 6 }, (_, i) => ({
-          score: 600 + Math.floor(Math.random() * 300),
-          status: 'GOOD',
-          lastUpdated: new Date(Date.now() - i * 24 * 60 * 60 * 1000),
-          factors: [
-            {
-              factor: 'Payment History',
-              impact: 'POSITIVE',
-              description: 'Consistent payments'
-            },
-            {
-              factor: 'Credit Utilization',
-              impact: 'NEUTRAL',
-              description: 'Moderate usage'
-            }
-          ]
-        }));
-        
-        setData(mockData);
+        const scoresRef = collection(db, 'creditScores');
+        const q = query(
+          scoresRef,
+          where('userId', '==', user.uid),
+          orderBy('lastUpdated', 'desc'),
+          limit(ANALYTICS_CONFIG.MAX_DATA_POINTS)
+        );
+
+        const querySnapshot = await getDocs(q);
+        const scores = querySnapshot.docs.map(doc => {
+          const data = doc.data();
+          return {
+            score: data.score,
+            status: getScoreStatus(data.score),
+            lastUpdated: data.lastUpdated.toDate(),
+            factors: data.factors || []
+          } as CreditScore;
+        });
+
+        setData(scores);
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Failed to fetch analytics'));
       } finally {
@@ -41,7 +47,14 @@ export function useAnalytics() {
     const interval = setInterval(fetchData, ANALYTICS_CONFIG.UPDATE_INTERVAL);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [user]);
 
   return { data, loading, error };
+}
+
+function getScoreStatus(score: number): CreditScoreStatus {
+  if (score >= CREDIT_THRESHOLDS.EXCELLENT) return 'EXCELLENT';
+  if (score >= CREDIT_THRESHOLDS.GOOD) return 'GOOD';
+  if (score >= CREDIT_THRESHOLDS.FAIR) return 'FAIR';
+  return 'POOR';
 } 

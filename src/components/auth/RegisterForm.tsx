@@ -5,6 +5,7 @@ import { auth, db } from '@/lib/firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
+import { addDoc, collection } from 'firebase/firestore';
 
 interface RegisterFormData {
   fullName: string;
@@ -48,6 +49,8 @@ export default function RegisterForm() {
         formData.password
       );
 
+      console.log('User created:', userCredential.user.uid);
+
       await setDoc(doc(db, 'users', userCredential.user.uid), {
         fullName: formData.fullName,
         email: formData.email,
@@ -55,7 +58,49 @@ export default function RegisterForm() {
         role: 'user'
       });
 
-      navigate('/profile');
+      console.log('User profile saved');
+
+      const demoApplications = [
+        {
+          userId: userCredential.user.uid,
+          amount: 50000,
+          purpose: 'PERSONAL',
+          status: 'PENDING',
+          guarantors: [],
+          documents: [],
+          terms: {
+            interestRate: 5.5,
+            loanTerm: 12,
+            monthlyPayment: 4300,
+            totalPayment: 51600
+          },
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        },
+        {
+          userId: userCredential.user.uid,
+          amount: 150000,
+          purpose: 'MORTGAGE',
+          status: 'APPROVED',
+          guarantors: [],
+          documents: [],
+          terms: {
+            interestRate: 3.5,
+            loanTerm: 360,
+            monthlyPayment: 2800,
+            totalPayment: 180000
+          },
+          createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+          updatedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+        }
+      ];
+
+      const applicationsRef = collection(db, 'applications');
+      await Promise.all(
+        demoApplications.map(application => addDoc(applicationsRef, application))
+      );
+
+      navigate('/applications');
     } catch (err: any) {
       switch (err.code) {
         case 'auth/email-already-in-use':

@@ -5,8 +5,7 @@ import {
   CreditCard, 
   FileText, 
   PieChart, 
-  User,
-  Settings 
+  User
 } from 'lucide-react';
 import { ROUTES } from '@/routes';
 
@@ -15,19 +14,19 @@ interface SidebarProps {
 }
 
 const navItems = [
-  { icon: LayoutDashboard, label: 'Dashboard', route: ROUTES.DASHBOARD },
-  { icon: CreditCard, label: 'Credit Score', route: ROUTES.CREDIT_SCORE },
-  { icon: FileText, label: 'Applications', route: ROUTES.APPLICATIONS },
-  { icon: PieChart, label: 'Analytics', route: ROUTES.ANALYTICS },
-  { icon: User, label: 'Profile', route: ROUTES.PROFILE },
+  { icon: LayoutDashboard, label: 'דף הבית', route: ROUTES.HOME },
+  { icon: CreditCard, label: 'ציון אשראי', route: ROUTES.CREDIT_SCORE },
+  { icon: FileText, label: 'בקשות', route: ROUTES.APPLICATIONS },
+  { icon: PieChart, label: 'אנליטיקס', route: ROUTES.ANALYTICS },
+  { icon: User, label: 'פרופיל', route: ROUTES.PROFILE },
 ];
 
 export default function Sidebar({ isOpen }: SidebarProps) {
   return (
     <aside className={`
-      fixed top-16 left-0 h-[calc(100vh-4rem)] bg-white border-r w-64 
+      fixed top-16 right-0 h-[calc(100vh-4rem)] bg-white border-l w-64 
       transition-transform duration-300 ease-in-out z-30
-      ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+      ${isOpen ? 'translate-x-0' : 'translate-x-full'}
       md:translate-x-0 md:static md:h-[calc(100vh-4rem)]
     `}>
       <div className="p-4">

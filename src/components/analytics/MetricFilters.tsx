@@ -22,11 +22,11 @@ export default function MetricFilters({ filters, onChange, disabled }: MetricFil
         <div>
           <label className="block text-sm font-medium mb-2">סוג מדד</label>
           <Select
-            value={filters.types.join(',')}
-            onChange={(e) => onChange({ 
-              ...filters, 
-              types: e.target.value.split(',').filter(Boolean) as MetricType[] 
-            })}
+            value={filters.types}
+            onChange={(e) => {
+              const values = Array.from(e.target.selectedOptions).map(opt => opt.value);
+              onChange({ ...filters, types: values as MetricType[] });
+            }}
             options={METRIC_TYPES}
             isMulti
             isDisabled={disabled}

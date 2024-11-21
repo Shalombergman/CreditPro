@@ -35,39 +35,26 @@ app.post('/api/register', (req, res) => {
 });
 
 // נתיב לאימות
-app.post('/api/verify_register', (req, res) => {
+app.post('/api/verify_register', (req: any, res: any) => {
   try {
-    const { email, otp, tempUserId } = req.body;
-    console.log('Received verification request:', { email, otp, tempUserId });
-
-    // בדיקה שיש tempUserId
-    if (!tempUserId) {
-      return res.status(400).json({ message: 'Missing tempUserId' });
+    const { email, otp } = req.body;
+    
+    // בדיקה שהערכים קיימים
+    if (!email || !otp) {
+      return res.status(400).json({ message: 'Missing email or OTP' });
     }
 
-    // בדיקה שיש רישום ממתין
-    const pendingUser = pendingRegistrations.get(tempUserId);
-    if (!pendingUser) {
-      return res.status(400).json({ message: 'Invalid registration request' });
-    }
-
-    // בדיקה שהמייל תואם
-    if (pendingUser.email !== email) {
-      return res.status(400).json({ message: 'Email mismatch' });
-    }
-
-    // שליחת המייל והקוד לצוות 2
-    console.log('Sending to team 2:', {
-      email: email.trim(),
-      otp: otp.trim()
+    // הדפסה לבדיקה
+    console.log('Verification request:', {
+      email: email,
+      otp: otp
     });
 
-    // החזרת תשובה חיובית
     res.json({
       token: 'dummy-token',
       user: {
         id: 1,
-        email: email.trim()
+        email
       }
     });
   } catch (error) {

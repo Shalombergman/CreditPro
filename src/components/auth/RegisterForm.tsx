@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useNavigate } from 'react-router-dom';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 interface RegisterFormData {
   username: string;
@@ -25,7 +25,6 @@ export default function RegisterForm() {
   // מצבים חדשים
   const [showOtpDialog, setShowOtpDialog] = useState(false);
   const [otp, setOtp] = useState('');
-  const [tempUserId, setTempUserId] = useState('');
   const [otpError, setOtpError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -43,7 +42,8 @@ export default function RegisterForm() {
       const response = await fetch('http://127.0.0.1:5001/api/register', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
         },
         body: JSON.stringify({
           username: formData.username,
@@ -53,14 +53,13 @@ export default function RegisterForm() {
       });
 
       const data = await response.json();
-      console.log('Server response:', data);
+      console.log('Registration response:', data);
 
       if (!response.ok) {
         throw new Error(data.message || 'שגיאה בתהליך ההרשמה');
       }
 
-      // פתיחת חלון האימות
-      setTempUserId(data.tempUserId);
+      // אם הגענו לכאן, ההרשמה הצליחה ונשלח קוד אימות
       setShowOtpDialog(true);
       setOtpError('');
     } catch (err: any) {
@@ -81,30 +80,33 @@ export default function RegisterForm() {
     setOtpError('');
 
     try {
-      const requestData = {
-        "email": formData.email,
-        "otp": otp.toString(),
-        "tempUserId": tempUserId
-      };
-      console.log('Sending verification data:', requestData);
-
       const response = await fetch('http://127.0.0.1:5001/api/verify_register', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(requestData)
+        body: JSON.stringify({
+          email: formData.email,
+          otp: otp.trim()
+        }),
+        // הוספת credentials כדי לשמור על ה-session
+        credentials: 'include'
       });
 
       const data = await response.json();
-      console.log('Server response:', data);
+      console.log('Server response:', data);  // לדיבוג
 
       if (!response.ok) {
-        throw new Error(data.message || 'קוד האימות שגוי');
+        throw new Error(data.message || data.error || 'קוד האימות שגוי');
       }
 
-      setShowOtpDialog(false);
-      navigate('/profile');
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+        setShowOtpDialog(false);
+        navigate('/profile');
+      } else {
+        throw new Error('לא התקבל טוקן מהשרת');
+      }
     } catch (err: any) {
       console.error('שגיאת אימות:', err);
       setOtpError(err.message || 'שגיאה באימות הקוד. אנא נסה שוב.');
@@ -173,11 +175,11 @@ export default function RegisterForm() {
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>אימות חשבון</DialogTitle>
+            <DialogDescription>
+              קוד אימות נשלח לכתובת המייל שלך. אנא הזן אותו כאן:
+            </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            <p className="text-sm text-gray-500">
-              קוד אימות נשלח לכתובת המייל שלך. אנא הזן אותו כאן:
-            </p>
             <Input
               type="text"
               placeholder="הזן קוד אימות"

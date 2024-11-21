@@ -13,6 +13,8 @@ export default function LoginForm() {
     email: '',
     password: ''
   });
+  const [otp, setOtp] = useState('');
+  const [showOtpDialog, setShowOtpDialog] = useState(false);
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -27,19 +29,55 @@ export default function LoginForm() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json'
         },
         body: JSON.stringify({
           email: formData.email,
           password: formData.password
-        })
+        }),
+        credentials: 'include'
       });
 
       const data = await response.json();
-      console.log('Server response:', data);
 
       if (!response.ok) {
-        throw new Error(data.message || 'שגיאה בתהליך ההתחברות');
+        throw new Error(data.message || data.error || 'שגיאה בתהליך ההתחברות');
+      }
+
+      setShowOtpDialog(true);
+    } catch (err: any) {
+      console.error('Login error:', err);
+      setError(err.message || 'שגיאה בתהליך ההתחברות');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (!otp) {
+      setError('נא להזין קוד אימות');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+
+    try {
+      const response = await fetch('http://127.0.0.1:5001/api/verify_login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          otp: otp.trim()
+        }),
+        credentials: 'include'
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || data.error || 'קוד האימות שגוי');
       }
 
       if (data.token) {
@@ -49,46 +87,58 @@ export default function LoginForm() {
         throw new Error('לא התקבל טוקן מהשרת');
       }
     } catch (err: any) {
-      console.error('Login error:', err);
-      if (err.message === 'Failed to fetch') {
-        setError('לא ניתן להתחבר לשרת. אנא בדוק את החיבור לאינטרנט ונסה שוב.');
-      } else {
-        setError(err.message || 'אירעה שגיאה בתהליך ההתחברות. אנא נסה שוב.');
-      }
+      console.error('Verification error:', err);
+      setError(err.message || 'שגיאה באימות הקוד');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      {error && <div className="text-red-500 text-sm">{error}</div>}
-      
-      <div className="space-y-2">
-        <Input
-          type="email"
-          placeholder="אימייל"
-          value={formData.email}
-          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-          required
-          disabled={loading}
-        />
-      </div>
-      
-      <div className="space-y-2">
-        <Input
-          type="password"
-          placeholder="סיסמה"
-          value={formData.password}
-          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-          required
-          disabled={loading}
-        />
-      </div>
-
-      <Button type="submit" className="w-full" disabled={loading}>
-        {loading ? 'מתחבר...' : 'התחבר'}
-      </Button>
-    </form>
+    <div>
+      {!showOtpDialog ? (
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <Input
+            type="email"
+            placeholder="אימייל"
+            value={formData.email}
+            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            required
+            disabled={loading}
+          />
+          <Input
+            type="password"
+            placeholder="סיסמה"
+            value={formData.password}
+            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+            required
+            disabled={loading}
+          />
+          {error && <p className="text-red-500 text-sm">{error}</p>}
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? 'מתחבר...' : 'התחברות'}
+          </Button>
+        </form>
+      ) : (
+        <div className="space-y-4">
+          <Input
+            type="text"
+            placeholder="הזן קוד אימות"
+            value={otp}
+            onChange={(e) => setOtp(e.target.value)}
+            required
+            disabled={loading}
+          />
+          {error && <p className="text-red-500 text-sm">{error}</p>}
+          <Button 
+            onClick={handleVerifyOtp} 
+            className="w-full" 
+            disabled={loading}
+          >
+            {loading ? 'מאמת...' : 'אימות'}
+          </Button>
+        </div>
+      )}
+    </div>
   );
 } 

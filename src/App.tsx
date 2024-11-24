@@ -31,7 +31,9 @@ function AppRoutes() {
         </Route>
       </Route>
       
-      <Route path="*" element={<Navigate to={ROUTES.HOME} replace />} />
+      <Route path="*" element={
+        isAuthenticated ? <Navigate to={ROUTES.HOME} replace /> : <Navigate to={ROUTES.AUTH} replace />
+      } />
     </Routes>
   );
 }

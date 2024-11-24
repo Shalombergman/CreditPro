@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface LoginFormData {
   email: string;
@@ -18,6 +19,7 @@ export default function LoginForm() {
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,6 +84,7 @@ export default function LoginForm() {
 
       if (data.token) {
         localStorage.setItem('token', data.token);
+        await login(data.token);
         navigate('/profile');
       } else {
         throw new Error('לא התקבל טוקן מהשרת');

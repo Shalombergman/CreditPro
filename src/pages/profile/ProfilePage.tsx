@@ -23,31 +23,26 @@ export default function ProfilePage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(async (user: User | null) => {
-      if (!user) {
-        navigate('/auth');
-        return;
-      }
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/auth');
+      return;
+    }
 
-      try {
-        const userDoc = await getDoc(doc(db, 'users', user.uid));
-        const userData = userDoc.data();
-        
-        if (userDoc.exists() && userData) {
-          setProfile({
-            username: userData.username,
-            email: user.email || '',
-            joinDate: new Date(user.metadata.creationTime || Date.now()).toLocaleDateString('he-IL')
-          });
-        }
-      } catch (error) {
-        console.error('Error fetching profile:', error);
-      } finally {
-        setLoading(false);
+    fetch('http://127.0.0.1:5001/api/me', {
+      headers: {
+        'Authorization': `Bearer ${token}`
       }
-    });
-
-    return () => unsubscribe();
+    })
+    .then(res => res.json())
+    .then(data => {
+      setProfile(data);
+    })
+    .catch(err => {
+      console.error('Error fetching profile:', err);
+      navigate('/auth');
+    })
+    .finally(() => setLoading(false));
   }, [navigate]);
 
   const handleLogout = async () => {
